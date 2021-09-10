@@ -1,6 +1,7 @@
-# GodotXliff [WIP]
+# GodotXliff
 
 XLIFF (monolingual) importer for Godot.  
+Currently supports a **reasonable subset** of the XLIFF format.  
 _Tested with version 3.3.3 (stable), may work with earlier or later builds too._
 
 ## Why
