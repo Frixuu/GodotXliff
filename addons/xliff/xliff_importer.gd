@@ -10,6 +10,8 @@ enum KeyExtractor {
     NONE,
 }
 
+var parser_helper = load("res://addons/xliff/xliff_parser_helper.gd").new()
+
 func get_importer_name() -> String:
     return "frixuu.xliff"
 
@@ -110,13 +112,11 @@ func import(
             "source":
                 if extractor != KeyExtractor.SOURCE_TAG:
                     continue
-                if parser.get_node_type() != XMLParser.NODE_ELEMENT_END:
-                    _err = parser.read()
-                    _key = parser.get_node_data()
+                if parser.get_node_type() == XMLParser.NODE_ELEMENT:
+                    _key = parser_helper.extract_text_data(parser, source_file)
             "target":
-                if parser.get_node_type() != XMLParser.NODE_ELEMENT_END:
-                    _err = parser.read()
-                    _value = parser.get_node_data()
+                if parser.get_node_type() == XMLParser.NODE_ELEMENT:
+                    _value = parser_helper.extract_text_data(parser, source_file)
 
     if options.get("override/enabled", false):
         translation.locale = options.get("override/iso_code", "")
