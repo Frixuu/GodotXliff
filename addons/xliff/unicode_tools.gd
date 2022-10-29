@@ -2,7 +2,7 @@ tool
 extends Reference
 
 static func codepoint_to_utf8_bytes(unicode: int) -> PoolByteArray:
-    var before: int = unicode
+
     var arr = PoolByteArray([])
 
     if unicode < 0:
