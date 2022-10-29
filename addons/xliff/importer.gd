@@ -1,8 +1,10 @@
 tool
 extends EditorImportPlugin
 
-class_name XliffImportPlugin
+const ParserTools = preload("parser_tools.gd")
+const StringTools = preload("string_tools.gd")
 
+## Determines from which part of the file the key will be extracted.
 enum KeyExtractor {
     SOURCE_TAG,
     ID,
@@ -10,16 +12,14 @@ enum KeyExtractor {
     NONE,
 }
 
-var parser_helper = load("res://addons/xliff/xliff_parser_helper.gd").new()
-
 func get_importer_name() -> String:
     return "frixuu.xliff"
 
 func get_visible_name() -> String:
-    return "XLiff (Monolingual)"
+    return "XLIFF"
 
 func get_recognized_extensions() -> Array:
-    return ["xml"]
+    return ["xliff", "xlf", "xml"]
 
 func get_save_extension() -> String:
     return "translation"
@@ -39,7 +39,7 @@ func get_import_options(_i: int) -> Array:
             "name": "key_extractor",
             "property_hint": PROPERTY_HINT_ENUM,
             "default_value": 0,
-            "hint_string": "<source> tag,ID,ResName or ID",
+            "hint_string": "Contents of <source>,Segment ID,Segment ResName (or ID as fallback)",
         },
         {
             "name": "override/enabled",
@@ -72,8 +72,8 @@ func import(
     var translation: Translation = Translation.new()
 
     var _err: int
-    var _key: String = ""
-    var _value: String = ""
+    var key: String = ""
+    var value: String = ""
     var extractor = options.get("key_extractor", KeyExtractor.NONE)
 
     while parser.read() != ERR_FILE_EOF:
@@ -81,11 +81,10 @@ func import(
         if parser.get_node_type() == XMLParser.NODE_TEXT:
             continue
 
-        if parser.has_attribute("trgLang"):
-            translation.locale = parser.get_named_attribute_value("trgLang")
-
         if parser.has_attribute("target-language"):
             translation.locale = parser.get_named_attribute_value("target-language")
+        elif parser.has_attribute("trgLang"):
+            translation.locale = parser.get_named_attribute_value("trgLang")
 
         match parser.get_node_name():
             "segment", "trans-unit":
@@ -93,31 +92,35 @@ func import(
                     continue
                 match parser.get_node_type():
                     XMLParser.NODE_ELEMENT:
-                        _key = ""
-                        _value = ""
+                        key = ""
+                        value = ""
                         match extractor:
                             KeyExtractor.RESNAME_OR_ID:
-                                _key = parser.get_named_attribute_value_safe("resname")
-                                if _key == "":
-                                    _key = parser.get_named_attribute_value_safe("id")
+                                key = parser.get_named_attribute_value_safe("resname")
+                                if key == "":
+                                    key = parser.get_named_attribute_value_safe("id")
                             KeyExtractor.ID:
-                                _key = parser.get_named_attribute_value_safe("id")
+                                key = parser.get_named_attribute_value_safe("id")
                     XMLParser.NODE_ELEMENT_END:
-                        if _key != "" && _value != "":
-                            translation.add_message(_key, _value)
-                        elif _key != "":
-                            printerr("%s: no value found for key %s" % [source_file, _key])
+                        if key != "" && value != "":
+                            translation.add_message(key, value)
+                        elif key != "":
+                            printerr("%s: no value found for key \"%s\""
+                                % [source_file, StringTools.truncate(key, 60)])
                         else:
-                            printerr("%s: no key matched for value %s" % [source_file, _value])
+                            printerr("%s: no key matched for value \"%s\""
+                                % [source_file, StringTools.truncate(value, 60)])
             "source":
                 if extractor != KeyExtractor.SOURCE_TAG:
                     continue
                 if parser.get_node_type() == XMLParser.NODE_ELEMENT:
-                    _key = parser_helper.extract_text_data(parser, source_file)
+                    key = ParserTools.extract_text_data(parser, source_file)
             "target":
                 if parser.get_node_type() == XMLParser.NODE_ELEMENT:
-                    _value = parser_helper.extract_text_data(parser, source_file)
+                    value = ParserTools.extract_text_data(parser, source_file)
 
+    # It's possible we may have detected the target language wrongly,
+    # override it if it's requested
     if options.get("override/enabled", false):
         translation.locale = options.get("override/iso_code", "")
 
