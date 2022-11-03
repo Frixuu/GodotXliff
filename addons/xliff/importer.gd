@@ -3,7 +3,9 @@ extends EditorImportPlugin
 
 const Common = preload("common.gd")
 const KeyExtractor = Common.KeyExtractor
+const ImportLocation = Common.ImportLocation
 const ParserTools = preload("parser_tools.gd")
+const IMPORT_LOCATION_SETTING = "addons/xliff/generated_file_location"
 
 func get_importer_name() -> String:
     return "frixuu.xliff"
@@ -15,7 +17,11 @@ func get_recognized_extensions() -> Array:
     return ["xliff", "xlf", "xml"]
 
 func get_save_extension() -> String:
-    return "translation"
+    match ProjectSettings.get_setting(IMPORT_LOCATION_SETTING):
+        ImportLocation.DEFAULT:
+            return "translation"
+        _:
+            return ""
 
 func get_resource_type() -> String:
     return "Translation"
@@ -71,5 +77,18 @@ func import(
     if options.get("override/enabled", false):
         translation_object.locale = options.get("override/iso_code", "")
 
-    save_path = save_path + "." + get_save_extension()
-    return ResourceSaver.save(save_path, translation_object)
+    match ProjectSettings.get_setting(IMPORT_LOCATION_SETTING):
+        ImportLocation.DEFAULT:
+            save_path = save_path + "." + get_save_extension()
+            return ResourceSaver.save(save_path, translation_object)
+        ImportLocation.ALONGSIDE_ORIGINAL:
+            save_path = source_file.get_basename() + ".translation"
+            var err := ResourceSaver.save(save_path, translation_object)
+            if err != OK:
+                printerr("Cannot save resource %s: %d" % [save_path, err])
+                return err
+            gen_files.push_back(save_path)
+            return OK
+        _:
+            printerr("Invalid import location setting value (%s)" % IMPORT_LOCATION_SETTING)
+            return FAILED

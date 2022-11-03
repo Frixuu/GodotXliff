@@ -17,3 +17,10 @@ enum KeyExtractor {
     RESNAME_OR_ID,
     NONE,
 }
+
+enum ImportLocation {
+    ## The file will be saved to Godot's chosen location, typically res://.import
+    DEFAULT,
+    ## The generated file will be generated at the original's location.
+    ALONGSIDE_ORIGINAL,
+}
