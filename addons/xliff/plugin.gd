@@ -1,4 +1,4 @@
-tool
+@tool
 extends EditorPlugin
 
 const Common = preload("common.gd")

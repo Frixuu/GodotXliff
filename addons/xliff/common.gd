@@ -1,5 +1,5 @@
-tool
-extends Reference
+@tool
+extends RefCounted
 
 ## Determines from which part of the file the key will be extracted.
 enum KeyExtractor {

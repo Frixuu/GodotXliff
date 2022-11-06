@@ -1,5 +1,5 @@
-tool
-extends Reference
+@tool
+extends RefCounted
 
 ## Limits the max length of a string.
 static func truncate(text: String, max_length: int) -> String:

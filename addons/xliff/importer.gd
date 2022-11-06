@@ -1,4 +1,4 @@
-tool
+@tool
 extends EditorImportPlugin
 
 const Common = preload("common.gd")
@@ -7,32 +7,38 @@ const ImportLocation = Common.ImportLocation
 const ParserTools = preload("parser_tools.gd")
 const IMPORT_LOCATION_SETTING = "addons/xliff/generated_file_location"
 
-func get_importer_name() -> String:
+func _get_importer_name() -> String:
     return "frixuu.xliff"
 
-func get_visible_name() -> String:
+func _get_visible_name() -> String:
     return "XLIFF"
 
-func get_recognized_extensions() -> Array:
-    return ["xliff", "xlf", "xml"]
+func _get_recognized_extensions() -> PackedStringArray:
+    return PackedStringArray(["xliff", "xlf", "xml"])
 
-func get_save_extension() -> String:
+func _get_save_extension() -> String:
     match ProjectSettings.get_setting(IMPORT_LOCATION_SETTING):
         ImportLocation.DEFAULT:
             return "translation"
         _:
             return ""
 
-func get_resource_type() -> String:
+func _get_resource_type() -> String:
     return "Translation"
 
-func get_preset_count() -> int:
+func _get_priority() -> float:
+    return 1.0
+
+func _get_import_order() -> int:
+    return IMPORT_ORDER_DEFAULT
+
+func _get_preset_count() -> int:
     return 1
 
-func get_preset_name(_i: int) -> String:
+func _get_preset_name(_index: int) -> String:
     return "Default"
 
-func get_import_options(_i: int) -> Array:
+func _get_import_options(_path: String, _index: int) -> Array[Dictionary]:
     return [
         {
             "name": "key_extractor",
@@ -50,12 +56,12 @@ func get_import_options(_i: int) -> Array:
         },
     ]
 
-func get_option_visibility(option: String, options: Dictionary) -> bool:
-    if option == "override/iso_code":
+func _get_option_visibility(_path: String, option_name: StringName, options: Dictionary) -> bool:
+    if option_name == "override/iso_code":
         return options.get("override/enabled", false)
     return true
 
-func import(
+func _import(
     source_file: String,
     save_path: String,
     options: Dictionary,
@@ -79,11 +85,11 @@ func import(
 
     match ProjectSettings.get_setting(IMPORT_LOCATION_SETTING):
         ImportLocation.DEFAULT:
-            save_path = save_path + "." + get_save_extension()
-            return ResourceSaver.save(save_path, translation_object)
+            save_path = save_path + "." + _get_save_extension()
+            return ResourceSaver.save(translation_object, save_path)
         ImportLocation.ALONGSIDE_ORIGINAL:
             save_path = source_file.get_basename() + ".translation"
-            var err := ResourceSaver.save(save_path, translation_object)
+            var err := ResourceSaver.save(translation_object, save_path)
             if err != OK:
                 printerr("Cannot save resource %s: %d" % [save_path, err])
                 return err

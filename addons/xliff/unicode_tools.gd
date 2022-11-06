@@ -1,9 +1,9 @@
-tool
-extends Reference
+@tool
+extends RefCounted
 
-static func codepoint_to_utf8_bytes(unicode: int) -> PoolByteArray:
+static func codepoint_to_utf8_bytes(unicode: int) -> PackedByteArray:
 
-    var arr = PoolByteArray([])
+    var arr = PackedByteArray([])
 
     if unicode < 0:
         printerr("unicode symbol must be a non-negative integer")
