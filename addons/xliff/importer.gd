@@ -65,9 +65,9 @@ func _import(
     source_file: String,
     save_path: String,
     options: Dictionary,
-    platform_variants: Array,
-    gen_files: Array
- ) -> int:
+    platform_variants: Array[String],
+    gen_files: Array[String]
+ ) -> Error:
 
     var parser: XMLParser = XMLParser.new()
     if parser.open(source_file) != OK:
