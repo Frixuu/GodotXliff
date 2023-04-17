@@ -16,7 +16,7 @@ func _enter_tree() -> void:
         "name": IMPORT_LOCATION_SETTING,
         "type": TYPE_INT,
         "hint": PROPERTY_HINT_ENUM,
-        "hint_string": "Default (typically .import),Next to the original file"
+        "hint_string": "Default (typically .godot/imported),Next to the original file"
     })
     
     self.add_import_plugin(importer)
