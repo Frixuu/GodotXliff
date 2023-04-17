@@ -1,6 +1,8 @@
 # GodotXliff
 
-XLIFF translation importer for Godot 3.x.
+> **Note**: You are looking at the 3.x branch. [For Godot 4.x, click here.](https://github.com/Frixuu/GodotXliff/tree/4.x)
+
+XLIFF translation importer for Godot.
 
 While the main motivation was handling files exported by Weblate,
 it currently supports a _reasonable subset_ of both XLIFF 1.2 and 2.0.
